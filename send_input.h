@@ -30,4 +30,17 @@ void send_mouse_wheel(int dx, int dy);
 void send_key_down(int keycode, int extended);
 void send_key_up(int keycode, int extended);
 
+/** Convert char to virtual-key code
+ */
+int char_to_keycode(int c, int* shift, int* ctrl, int* alt);
+int wchar_to_keycode(int wc, int* shift, int* ctrl, int* alt);
+
+/** Simulate char
+ */
+void send_char(char c);
+
+/** Simulate string
+ */
+void send_string(char* str);
+
 #endif

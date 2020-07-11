@@ -121,3 +121,87 @@ void send_key_up(int keycode, int extended) {
 
 	SendInput(1, &input, sizeof(INPUT));
 }
+
+
+int char_to_keycode(int c, int* shift, int* ctrl, int* alt) {
+	
+	SHORT ret = VkKeyScanA(c);
+
+	if (ret < 0) {
+		return -1;
+	}
+
+	int keycode = ret & 0xFF;
+
+	ret >>= 8;
+
+	*shift = ret & 1;
+	*ctrl  = ret & 2;
+	*alt   = ret & 4;
+
+	return keycode;
+}
+
+int wchar_to_keycode(int wc, int* shift, int* ctrl, int* alt) {
+
+	SHORT ret = VkKeyScanW(wc);
+
+	if (ret < 0) {
+		return -1;
+	}
+
+	int keycode = ret & 0xFF;
+
+	ret >>= 8;
+
+	*shift = ret & 1;
+	*ctrl  = ret & 2;
+	*alt   = ret & 4;
+
+	return keycode;
+}
+
+
+void send_char(char c) {
+
+	int keycode, shift, ctrl, alt;
+
+	keycode = char_to_keycode(c, &shift, &ctrl, &alt);
+
+	if (keycode > 0) {
+
+		if (ctrl)  send_key_down(VK_LCONTROL, 1);
+		if (alt)   send_key_down(VK_RMENU, 1);
+		if (shift) send_key_down(VK_LSHIFT, 1);
+
+		send_key_down(keycode, 0);
+
+		if (shift) send_key_up(VK_LSHIFT, 1);
+		if (alt)   send_key_up(VK_RMENU, 1);
+		if (ctrl)  send_key_up(VK_LCONTROL, 1);
+	}
+}
+
+
+void send_string(char* str) {
+
+	char c;
+
+	int keycode;
+	
+	int shift, shift2 = 0;
+	int ctrl, ctrl2 = 0;
+	int alt, alt2 = 0;
+
+	while ((c = *str++) != '\0') {
+
+		keycode = char_to_keycode(c, &shift, &ctrl, &alt);
+
+		if (keycode > 0) {
+
+			if (ctrl) {
+				send_key_down(keycode, 0);
+			}
+		}
+	}
+}

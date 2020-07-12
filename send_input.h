@@ -39,8 +39,12 @@ int wchar_to_keycode(int wc, int* shift, int* ctrl, int* alt);
  */
 void send_char(char c);
 
+/** Convert words per minute to ms per char
+ */
+int wpm_to_mspc(float words_per_minute);
+
 /** Simulate string
  */
-void send_string(char* str);
+void send_string(const char* str, int ms_per_char, int dms);
 
 #endif

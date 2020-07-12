@@ -1,5 +1,6 @@
 #include "send_input.h"
 
+#include <stdlib.h>
 #include <windows.h>
 #include <winuser.h>
 
@@ -170,38 +171,94 @@ void send_char(char c) {
 
 	if (keycode > 0) {
 
-		if (ctrl)  send_key_down(VK_LCONTROL, 1);
-		if (alt)   send_key_down(VK_RMENU, 1);
-		if (shift) send_key_down(VK_LSHIFT, 1);
+		if (ctrl)  send_key_down(VK_LCONTROL, 0);
+		if (alt)   send_key_down(VK_RMENU, 0);
+		if (shift) send_key_down(VK_LSHIFT, 0);
 
 		send_key_down(keycode, 0);
 
-		if (shift) send_key_up(VK_LSHIFT, 1);
-		if (alt)   send_key_up(VK_RMENU, 1);
-		if (ctrl)  send_key_up(VK_LCONTROL, 1);
+		if (shift) send_key_up(VK_LSHIFT, 0);
+		if (alt)   send_key_up(VK_RMENU, 0);
+		if (ctrl)  send_key_up(VK_LCONTROL, 0);
 	}
 }
 
 
-void send_string(char* str) {
+int wpm_to_mspc(float words_per_minute) {
+	return (int)((words_per_minute > 0) ? (60000.0f / (words_per_minute * 5.0f)) : 0);
+}
+
+
+static void sleep(int ms, int dms) {
+	float dt = rand() / (float)RAND_MAX;
+	int t = (int)(2 * dms * (dt * dt * (3.0f - 2.0f * dt)) + ms - dms);
+	if (t > 0) Sleep(t);
+}
+
+
+void send_string(const char* str, int ms_per_char, int dms) {
 
 	char c;
 
 	int keycode;
 	
-	int shift, shift2 = 0;
-	int ctrl, ctrl2 = 0;
-	int alt, alt2 = 0;
+	int shift, shift_old = 0;
+	int ctrl, ctrl_old = 0;
+	int alt, alt_old = 0;
+
+	int mspc_3_4 = ms_per_char * 3 / 4;
+	int dms_3_4 = dms * 3 / 4;
+
+	int mspc_1_4 = ms_per_char / 4;
+	int dms_1_4 = dms / 4;
 
 	while ((c = *str++) != '\0') {
 
 		keycode = char_to_keycode(c, &shift, &ctrl, &alt);
-
+		
 		if (keycode > 0) {
 
 			if (ctrl) {
-				send_key_down(keycode, 0);
+				if (!ctrl_old) {
+					sleep(mspc_1_4, dms_1_4);
+					send_key_down(VK_LCONTROL, 0);
+				}
 			}
+			else if (ctrl_old) {
+				send_key_up(VK_LCONTROL, 0);
+			}
+
+			if (alt) {
+				if (!alt_old) {
+					sleep(mspc_1_4, dms_1_4);
+					send_key_down(VK_RMENU, 0);
+				}
+			}
+			else if (alt_old) {
+				send_key_up(VK_RMENU, 0);
+			}
+
+			if (shift) {
+				if (!shift_old) {
+					sleep(mspc_1_4, dms_1_4);
+					send_key_down(VK_LSHIFT, 0);
+				}
+			}
+			else if (shift_old) {
+				send_key_up(VK_LSHIFT, 0);
+			}
+
+			sleep(mspc_3_4, dms_3_4);
+
+			send_key_down(keycode, 0);
+
+			sleep(mspc_1_4, dms_1_4);
+
+			send_key_up(keycode, 0);
+
+			ctrl_old = ctrl;
+			alt_old = alt;
+			shift_old = shift;
 		}
 	}
 }

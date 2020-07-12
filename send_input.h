@@ -1,6 +1,8 @@
 #ifndef _SEND_INPUT_H_
 #define _SEND_INPUT_H_
 
+#include <wchar.h>
+
 /** Mouse button code
  */
 enum {
@@ -32,19 +34,22 @@ void send_key_up(int keycode, int extended);
 
 /** Convert char to virtual-key code
  */
-int char_to_keycode(int c, int* shift, int* ctrl, int* alt);
-int wchar_to_keycode(int wc, int* shift, int* ctrl, int* alt);
+int char_to_keycode(char c, int* shift, int* ctrl, int* alt);
+int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt);
 
 /** Simulate char
  */
 void send_char(char c);
+void send_wchar(wchar_t wc);
 
 /** Convert words per minute to ms per char
  */
 int wpm_to_mspc(float words_per_minute);
 
 /** Simulate string
+ * time per char = ms_per_char + random(-dms, dms)
  */
 void send_string(const char* str, int ms_per_char, int dms);
+void send_wstring(const wchar_t* wstr, int ms_per_char, int dms);
 
 #endif

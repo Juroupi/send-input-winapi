@@ -6,6 +6,21 @@
 #include <winuser.h>
 
 
+static int random_ms(int ms, int dms) {
+	if (dms == 0) return ms;
+	float x = rand() / (float)(RAND_MAX + 1);
+	float dt = logf(x / (1.0f - x)) * 0.1f + 0.5f;
+	if (dt > 1.0f || dt < 0.0f) dt = rand() / (float)RAND_MAX;
+	return (int)(2.0f * dms * dt) + ms - dms;
+}
+
+
+void sleep_ms(int ms, int dms) {
+	int t = random_ms(ms, dms);
+	if (t > 0) Sleep(t);
+}
+
+
 void send_button_down(int button) {
 
 	INPUT input = { 0 };
@@ -62,6 +77,23 @@ void send_button_up(int button) {
 	}
 
 	SendInput(1, &input, sizeof(INPUT));
+}
+
+
+void send_mouse_click(int button, int click_time_ms, int dms) {
+	send_button_down(button);
+	sleep_ms(click_time_ms, dms);
+	send_button_up(button);
+}
+
+void send_mouse_dblclick(int button, int click_time_ms, int dms) {
+	send_button_down(button);
+	sleep_ms(click_time_ms, dms);
+	send_button_up(button);
+	sleep_ms(click_time_ms, dms);
+	send_button_down(button);
+	sleep_ms(click_time_ms, dms);
+	send_button_up(button);
 }
 
 
@@ -125,6 +157,13 @@ void send_key_up(int keycode, int extended) {
 }
 
 
+void send_key_press(int keycode, int extended, int press_time_ms, int dms) {
+	send_key_down(keycode, extended);
+	sleep_ms(press_time_ms, dms);
+	send_key_up(keycode, extended);
+}
+
+
 int char_to_keycode(char c, int* shift, int* ctrl, int* alt) {
 	
 	SHORT ret = VkKeyScanA(c);
@@ -164,7 +203,7 @@ int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt) {
 }
 
 
-void send_char(char c) {
+void send_char(char c, int press_time_ms, int dms) {
 
 	int keycode, shift, ctrl, alt;
 
@@ -172,19 +211,44 @@ void send_char(char c) {
 
 	if (keycode > 0) {
 
-		if (ctrl)  send_key_down(VK_LCONTROL, 0);
-		if (alt)   send_key_down(VK_RMENU, 0);
-		if (shift) send_key_down(VK_LSHIFT, 0);
+		if (ctrl) {
+			send_key_down(VK_LCONTROL, 0);
+			sleep_ms(press_time_ms / 10, dms / 10);
+		}
+
+		if (alt) {
+			send_key_down(VK_RMENU, 0);
+			sleep_ms(press_time_ms / 10, dms / 10);
+		}
+
+		if (shift) {
+			send_key_down(VK_LSHIFT, 0);
+			sleep_ms(press_time_ms / 10, dms / 10);
+		}
 
 		send_key_down(keycode, 0);
 
-		if (shift) send_key_up(VK_LSHIFT, 0);
-		if (alt)   send_key_up(VK_RMENU, 0);
-		if (ctrl)  send_key_up(VK_LCONTROL, 0);
+		sleep_ms(press_time_ms, dms);
+
+		send_key_up(keycode, 0);
+
+		if (shift) {
+			send_key_up(VK_LSHIFT, 0);
+		}
+
+		if (alt) {
+			sleep_ms(press_time_ms / 10, dms / 10);
+			send_key_up(VK_RMENU, 0);
+		}
+
+		if (ctrl) {
+			sleep_ms(press_time_ms / 10, dms / 10);
+			send_key_up(VK_LCONTROL, 0);
+		}
 	}
 }
 
-void send_wchar(wchar_t wc) {
+void send_wchar(wchar_t wc, int press_time_ms, int dms) {
 
 	int keycode, shift, ctrl, alt;
 
@@ -192,36 +256,46 @@ void send_wchar(wchar_t wc) {
 
 	if (keycode > 0) {
 
-		if (ctrl)  send_key_down(VK_LCONTROL, 0);
-		if (alt)   send_key_down(VK_RMENU, 0);
-		if (shift) send_key_down(VK_LSHIFT, 0);
+		if (ctrl) {
+			send_key_down(VK_LCONTROL, 0);
+			sleep_ms(press_time_ms / 10, dms / 10);
+		}
+
+		if (alt) {
+			send_key_down(VK_RMENU, 0);
+			sleep_ms(press_time_ms / 10, dms / 10);
+		}
+
+		if (shift) {
+			send_key_down(VK_LSHIFT, 0);
+			sleep_ms(press_time_ms / 10, dms / 10);
+		}
 
 		send_key_down(keycode, 0);
 
-		if (shift) send_key_up(VK_LSHIFT, 0);
-		if (alt)   send_key_up(VK_RMENU, 0);
-		if (ctrl)  send_key_up(VK_LCONTROL, 0);
+		sleep_ms(press_time_ms, dms);
+
+		send_key_up(keycode, 0);
+
+		if (shift) {
+			send_key_up(VK_LSHIFT, 0);
+		}
+
+		if (alt) {
+			sleep_ms(press_time_ms / 10, dms / 10);
+			send_key_up(VK_RMENU, 0);
+		}
+
+		if (ctrl) {
+			sleep_ms(press_time_ms / 10, dms / 10);
+			send_key_up(VK_LCONTROL, 0);
+		}
 	}
 }
 
 
 int wpm_to_mspc(float words_per_minute) {
 	return (int)((words_per_minute > 0) ? (60000.0f / (words_per_minute * 5.0f)) : 0);
-}
-
-
-static int random_ms(int ms, int dms) {
-	if (dms == 0) return ms;
-	float x = rand() / (float)(RAND_MAX + 1);
-	float dt = logf(x / (1.0f - x)) * 0.1f + 0.5f;
-	if (dt > 1.0f || dt < 0.0f) dt = rand() / (float)RAND_MAX;
-	return (int)(2.0f * dms * dt) + ms - dms;
-}
-
-
-void sleep_ms(int ms, int dms) {
-	int t = random_ms(ms, dms);
-	if (t > 0) Sleep(t);
 }
 
 

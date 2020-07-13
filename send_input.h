@@ -3,6 +3,10 @@
 
 #include <wchar.h>
 
+/** Suspend execution
+ */
+void sleep_ms(int ms, int dms);
+
 /** Mouse button code
  */
 enum {
@@ -14,10 +18,13 @@ enum {
 	MOUSE_BUTTON_X2     = MOUSE_BUTTON_X + 1,
 };
 
-/** Simulate mouse button press
+/** Simulate mouse button click
  */
 void send_button_down(int button);
 void send_button_up(int button);
+
+void send_mouse_click(int button, int click_time_ms, int dms);
+void send_mouse_dblclick(int button, int click_time_ms, int dms);
 
 /** Simulate mouse move
  */
@@ -32,6 +39,8 @@ void send_mouse_wheel(int dx, int dy);
 void send_key_down(int keycode, int extended);
 void send_key_up(int keycode, int extended);
 
+void send_key_press(int keycode, int extended, int press_time_ms, int dms);
+
 /** Convert char to virtual-key code
  */
 int char_to_keycode(char c, int* shift, int* ctrl, int* alt);
@@ -39,16 +48,12 @@ int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt);
 
 /** Write char
  */
-void send_char(char c);
-void send_wchar(wchar_t wc);
+void send_char(char c, int press_time_ms, int dms);
+void send_wchar(wchar_t wc, int press_time_ms, int dms);
 
 /** Convert words per minute to ms per char
  */
 int wpm_to_mspc(float words_per_minute);
-
-/** Suspend execution
- */
-void sleep_ms(int ms, int dms);
 
 /** Write string
  * time per char = ms_per_char + random(-dms, dms)

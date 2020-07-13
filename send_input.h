@@ -37,7 +37,7 @@ void send_key_up(int keycode, int extended);
 int char_to_keycode(char c, int* shift, int* ctrl, int* alt);
 int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt);
 
-/** Simulate char
+/** Write char
  */
 void send_char(char c);
 void send_wchar(wchar_t wc);
@@ -46,7 +46,11 @@ void send_wchar(wchar_t wc);
  */
 int wpm_to_mspc(float words_per_minute);
 
-/** Simulate string
+/** Suspend execution
+ */
+void sleep_ms(int ms, int dms);
+
+/** Write string
  * time per char = ms_per_char + random(-dms, dms)
  */
 void send_string(const char* str, int ms_per_char, int dms);

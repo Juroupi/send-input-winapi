@@ -211,6 +211,7 @@ int wpm_to_mspc(float words_per_minute) {
 
 
 static int random_ms(int ms, int dms) {
+	if (dms == 0) return ms;
 	float x = rand() / (float)(RAND_MAX + 1);
 	float dt = logf(x / (1.0f - x)) * 0.1f + 0.5f;
 	if (dt > 1.0f || dt < 0.0f) dt = rand() / (float)RAND_MAX;
@@ -218,7 +219,7 @@ static int random_ms(int ms, int dms) {
 }
 
 
-static void sleep_ms(int ms, int dms) {
+void sleep_ms(int ms, int dms) {
 	int t = random_ms(ms, dms);
 	if (t > 0) Sleep(t);
 }

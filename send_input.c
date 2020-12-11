@@ -134,33 +134,49 @@ void send_mouse_wheel(int dx, int dy) {
 }
 
 
-void send_key_down(int keycode, int extended) {
+void send_key_down(int keycode, int extended, int send_scancode) {
 
 	INPUT input = { 0 };
 
 	input.type = INPUT_KEYBOARD;
-	input.ki.dwFlags = KEYEVENTF_SCANCODE | (extended ? KEYEVENTF_EXTENDEDKEY : 0);
-	input.ki.wScan = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
+	input.ki.dwFlags = extended ? KEYEVENTF_EXTENDEDKEY : 0;
+
+	if (send_scancode) {
+		input.ki.dwFlags |= KEYEVENTF_SCANCODE;
+		input.ki.wScan = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
+	}
+	
+	else {
+		input.ki.wVk = keycode;
+	}
 
 	SendInput(1, &input, sizeof(INPUT));
 }
 
-void send_key_up(int keycode, int extended) {
+void send_key_up(int keycode, int extended, int send_scancode) {
 
 	INPUT input = { 0 };
 
 	input.type = INPUT_KEYBOARD;
-	input.ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP | (extended ? KEYEVENTF_EXTENDEDKEY : 0);
-	input.ki.wScan = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
+	input.ki.dwFlags = KEYEVENTF_KEYUP | (extended ? KEYEVENTF_EXTENDEDKEY : 0);
+
+	if (send_scancode) {
+		input.ki.dwFlags |= KEYEVENTF_SCANCODE;
+		input.ki.wScan = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
+	}
+
+	else {
+		input.ki.wVk = keycode;
+	}
 
 	SendInput(1, &input, sizeof(INPUT));
 }
 
 
-void send_key_press(int keycode, int extended, int press_time_ms, int dms) {
-	send_key_down(keycode, extended);
+void send_key_press(int keycode, int extended, int send_scancode, int press_time_ms, int dms) {
+	send_key_down(keycode, extended, send_scancode);
 	sleep_ms(press_time_ms, dms);
-	send_key_up(keycode, extended);
+	send_key_up(keycode, extended, send_scancode);
 }
 
 
@@ -203,7 +219,7 @@ int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt) {
 }
 
 
-void send_char(char c, int press_time_ms, int dms) {
+void send_char(char c, int send_scancodes, int press_time_ms, int dms) {
 
 	int keycode, shift, ctrl, alt;
 
@@ -212,43 +228,43 @@ void send_char(char c, int press_time_ms, int dms) {
 	if (keycode > 0) {
 
 		if (ctrl) {
-			send_key_down(VK_LCONTROL, 0);
+			send_key_down(VK_LCONTROL, 0, send_scancodes);
 			sleep_ms(press_time_ms / 10, dms / 10);
 		}
 
 		if (alt) {
-			send_key_down(VK_RMENU, 0);
+			send_key_down(VK_RMENU, 0, send_scancodes);
 			sleep_ms(press_time_ms / 10, dms / 10);
 		}
 
 		if (shift) {
-			send_key_down(VK_LSHIFT, 0);
+			send_key_down(VK_LSHIFT, 0, send_scancodes);
 			sleep_ms(press_time_ms / 10, dms / 10);
 		}
 
-		send_key_down(keycode, 0);
+		send_key_down(keycode, 0, send_scancodes);
 
 		sleep_ms(press_time_ms, dms);
 
-		send_key_up(keycode, 0);
+		send_key_up(keycode, 0, send_scancodes);
 
 		if (shift) {
-			send_key_up(VK_LSHIFT, 0);
+			send_key_up(VK_LSHIFT, 0, send_scancodes);
 		}
 
 		if (alt) {
 			sleep_ms(press_time_ms / 10, dms / 10);
-			send_key_up(VK_RMENU, 0);
+			send_key_up(VK_RMENU, 0, send_scancodes);
 		}
 
 		if (ctrl) {
 			sleep_ms(press_time_ms / 10, dms / 10);
-			send_key_up(VK_LCONTROL, 0);
+			send_key_up(VK_LCONTROL, 0, send_scancodes);
 		}
 	}
 }
 
-void send_wchar(wchar_t wc, int press_time_ms, int dms) {
+void send_wchar(wchar_t wc, int send_scancodes, int press_time_ms, int dms) {
 
 	int keycode, shift, ctrl, alt;
 
@@ -257,38 +273,38 @@ void send_wchar(wchar_t wc, int press_time_ms, int dms) {
 	if (keycode > 0) {
 
 		if (ctrl) {
-			send_key_down(VK_LCONTROL, 0);
+			send_key_down(VK_LCONTROL, 0, send_scancodes);
 			sleep_ms(press_time_ms / 10, dms / 10);
 		}
 
 		if (alt) {
-			send_key_down(VK_RMENU, 0);
+			send_key_down(VK_RMENU, 0, send_scancodes);
 			sleep_ms(press_time_ms / 10, dms / 10);
 		}
 
 		if (shift) {
-			send_key_down(VK_LSHIFT, 0);
+			send_key_down(VK_LSHIFT, 0, send_scancodes);
 			sleep_ms(press_time_ms / 10, dms / 10);
 		}
 
-		send_key_down(keycode, 0);
+		send_key_down(keycode, 0, send_scancodes);
 
 		sleep_ms(press_time_ms, dms);
 
-		send_key_up(keycode, 0);
+		send_key_up(keycode, 0, send_scancodes);
 
 		if (shift) {
-			send_key_up(VK_LSHIFT, 0);
+			send_key_up(VK_LSHIFT, 0, send_scancodes);
 		}
 
 		if (alt) {
 			sleep_ms(press_time_ms / 10, dms / 10);
-			send_key_up(VK_RMENU, 0);
+			send_key_up(VK_RMENU, 0, send_scancodes);
 		}
 
 		if (ctrl) {
 			sleep_ms(press_time_ms / 10, dms / 10);
-			send_key_up(VK_LCONTROL, 0);
+			send_key_up(VK_LCONTROL, 0, send_scancodes);
 		}
 	}
 }
@@ -299,7 +315,7 @@ int wpm_to_mspc(float words_per_minute) {
 }
 
 
-void send_string(const char* str, int ms_per_char, int dms) {
+void send_string(const char* str, int send_scancodes, int ms_per_char, int dms) {
 
 	char c;
 
@@ -343,50 +359,62 @@ void send_string(const char* str, int ms_per_char, int dms) {
 			if (ctrl) {
 				if (!ctrl_old) {
 					sleep_ms(mspc4, dms4);
-					send_key_down(VK_LCONTROL, 0);
+					send_key_down(VK_LCONTROL, 0, send_scancodes);
 				}
 			}
 			else if (ctrl_old) {
-				send_key_up(VK_LCONTROL, 0);
+				send_key_up(VK_LCONTROL, 0, send_scancodes);
 			}
 
 			if (alt) {
 				if (!alt_old) {
 					sleep_ms(mspc4, dms4);
-					send_key_down(VK_RMENU, 0);
+					send_key_down(VK_RMENU, 0, send_scancodes);
 				}
 			}
 			else if (alt_old) {
-				send_key_up(VK_RMENU, 0);
+				send_key_up(VK_RMENU, 0, send_scancodes);
 			}
 
 			if (shift) {
 				if (!shift_old) {
 					sleep_ms(mspc4, dms4);
-					send_key_down(VK_LSHIFT, 0);
+					send_key_down(VK_LSHIFT, 0, send_scancodes);
 				}
 			}
 			else if (shift_old) {
-				send_key_up(VK_LSHIFT, 0);
+				send_key_up(VK_LSHIFT, 0, send_scancodes);
 			}
 			
 			sleep_ms(mspc_released, dms_released);
 
-			send_key_down(keycode, 0);
+			send_key_down(keycode, 0, send_scancodes);
 
 			sleep_ms(mspc_pressed, dms_pressed);
 
-			send_key_up(keycode, 0);
+			send_key_up(keycode, 0, send_scancodes);
 
 			ctrl_old = ctrl;
 			alt_old = alt;
 			shift_old = shift;
 		}
 	}
+
+	if (ctrl_old) {
+		send_key_up(VK_LCONTROL, 0, send_scancodes);
+	}
+
+	if (alt_old) {
+		send_key_up(VK_RMENU, 0, send_scancodes);
+	}
+
+	if (shift_old) {
+		send_key_up(VK_LSHIFT, 0, send_scancodes);
+	}
 }
 
 
-void send_wstring(const wchar_t* wstr, int ms_per_char, int dms) {
+void send_wstring(const wchar_t* wstr, int send_scancodes, int ms_per_char, int dms) {
 
 	wchar_t wc;
 
@@ -430,44 +458,85 @@ void send_wstring(const wchar_t* wstr, int ms_per_char, int dms) {
 			if (ctrl) {
 				if (!ctrl_old) {
 					sleep_ms(mspc4, dms4);
-					send_key_down(VK_LCONTROL, 0);
+					send_key_down(VK_LCONTROL, 0, send_scancodes);
 				}
 			}
 			else if (ctrl_old) {
-				send_key_up(VK_LCONTROL, 0);
+				send_key_up(VK_LCONTROL, 0, send_scancodes);
 			}
 
 			if (alt) {
 				if (!alt_old) {
 					sleep_ms(mspc4, dms4);
-					send_key_down(VK_RMENU, 0);
+					send_key_down(VK_RMENU, 0, send_scancodes);
 				}
 			}
 			else if (alt_old) {
-				send_key_up(VK_RMENU, 0);
+				send_key_up(VK_RMENU, 0, send_scancodes);
 			}
 
 			if (shift) {
 				if (!shift_old) {
 					sleep_ms(mspc4, dms4);
-					send_key_down(VK_LSHIFT, 0);
+					send_key_down(VK_LSHIFT, 0, send_scancodes);
 				}
 			}
 			else if (shift_old) {
-				send_key_up(VK_LSHIFT, 0);
+				send_key_up(VK_LSHIFT, 0, send_scancodes);
 			}
 
 			sleep_ms(mspc_released, dms_released);
 
-			send_key_down(keycode, 0);
+			send_key_down(keycode, 0, send_scancodes);
 
 			sleep_ms(mspc_pressed, dms_pressed);
 
-			send_key_up(keycode, 0);
+			send_key_up(keycode, 0, send_scancodes);
 
 			ctrl_old = ctrl;
 			alt_old = alt;
 			shift_old = shift;
 		}
 	}
+
+	if (ctrl_old) {
+		send_key_up(VK_LCONTROL, 0, send_scancodes);
+	}
+
+	if (alt_old) {
+		send_key_up(VK_RMENU, 0, send_scancodes);
+	}
+
+	if (shift_old) {
+		send_key_up(VK_LSHIFT, 0, send_scancodes);
+	}
+}
+
+
+int get_mouse_pos(int* x, int* y) {
+	POINT p;
+	if (GetCursorPos(&p)) {
+		*x = p.x, * y = p.y;
+		return 1;
+	}
+	return 0;
+}
+
+
+int get_title_bar_height() {
+	return GetSystemMetrics(SM_CYSIZE);
+}
+
+
+int get_foreground_window_box(int* x, int* y, int* w, int* h) {
+	HWND hwnd = GetForegroundWindow();
+	if (hwnd != NULL) {
+		RECT rect;
+		if (GetWindowRect(hwnd, &rect)) {			
+			*x = rect.left, *y = rect.top;
+			*w = rect.right - rect.left, *h = rect.bottom - rect.top;
+			return 1;
+		}
+	}
+	return 0;
 }

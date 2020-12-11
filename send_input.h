@@ -36,10 +36,10 @@ void send_mouse_wheel(int dx, int dy);
 
 /** Simulate key press
  */
-void send_key_down(int keycode, int extended);
-void send_key_up(int keycode, int extended);
+void send_key_down(int keycode, int extended, int send_scancode);
+void send_key_up(int keycode, int extended, int send_scancode);
 
-void send_key_press(int keycode, int extended, int press_time_ms, int dms);
+void send_key_press(int keycode, int extended, int send_scancode, int press_time_ms, int dms);
 
 /** Convert char to virtual-key code
  */
@@ -48,8 +48,8 @@ int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt);
 
 /** Write char
  */
-void send_char(char c, int press_time_ms, int dms);
-void send_wchar(wchar_t wc, int press_time_ms, int dms);
+void send_char(char c, int send_scancodes, int press_time_ms, int dms);
+void send_wchar(wchar_t wc, int send_scancodes, int press_time_ms, int dms);
 
 /** Convert words per minute to ms per char
  */
@@ -58,7 +58,21 @@ int wpm_to_mspc(float words_per_minute);
 /** Write string
  * time per char = ms_per_char + random(-dms, dms)
  */
-void send_string(const char* str, int ms_per_char, int dms);
-void send_wstring(const wchar_t* wstr, int ms_per_char, int dms);
+void send_string(const char* str, int send_scancodes, int ms_per_char, int dms);
+void send_wstring(const wchar_t* wstr, int send_scancodes, int ms_per_char, int dms);
+
+/** Get mouse position
+ * returns 0 if it fails, an other value otherwise
+ */
+int get_mouse_pos(int* x, int* y);
+
+/** Get window title bar height
+ */
+int get_title_bar_height();
+
+/** Get window title bar buttons width
+ * returns 0 if it fails, an other value otherwise
+ */
+int get_foreground_window_box(int* x, int* y, int* w, int* h);
 
 #endif

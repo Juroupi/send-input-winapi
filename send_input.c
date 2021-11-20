@@ -8,7 +8,7 @@
 
 static int random_ms(int ms, int dms) {
 	if (dms == 0) return ms;
-	float x = rand() / (float)(RAND_MAX + 1);
+	float x = (float)rand() / ((float)RAND_MAX + 1);
 	float dt = logf(x / (1.0f - x)) * 0.1f + 0.5f;
 	if (dt > 1.0f || dt < 0.0f) dt = rand() / (float)RAND_MAX;
 	return (int)(2.0f * dms * dt) + ms - dms;

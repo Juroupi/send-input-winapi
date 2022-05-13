@@ -310,6 +310,18 @@ void send_wchar(wchar_t wc, int send_scancodes, int press_time_ms, int dms) {
 }
 
 
+void send_unicode(int codepoint) {
+
+	INPUT input = { 0 };
+
+	input.type = INPUT_KEYBOARD;
+	input.ki.dwFlags = KEYEVENTF_UNICODE;
+	input.ki.wScan = (WORD)codepoint;
+
+	SendInput(1, &input, sizeof(INPUT));
+}
+
+
 int wpm_to_mspc(float words_per_minute) {
 	return (int)((words_per_minute > 0) ? (60000.0f / (words_per_minute * 5.0f)) : 0);
 }

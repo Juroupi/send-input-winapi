@@ -51,6 +51,10 @@ int wchar_to_keycode(wchar_t wc, int* shift, int* ctrl, int* alt);
 void send_char(char c, int send_scancodes, int press_time_ms, int dms);
 void send_wchar(wchar_t wc, int send_scancodes, int press_time_ms, int dms);
 
+/** Write unicode char
+ */
+void send_unicode(int codepoint);
+
 /** Convert words per minute to ms per char
  */
 int wpm_to_mspc(float words_per_minute);
